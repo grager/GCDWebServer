@@ -860,6 +860,44 @@ static inline NSString* _EncodeBase64(NSString* string) {
   return [self startWithOptions:options error:NULL];
 }
 
+- (NSDictionary *)TXTRecordDictionary
+{
+    __block NSDictionary *result;
+    
+/*    dispatch_sync(serverQueue, ^{
+        result = txtRecordDictionary;
+    });
+    */
+    return result;
+}
+
+- (void)setTXTRecordDictionary:(NSDictionary *)value
+{
+    
+/*    NSDictionary *valueCopy = [value copy];
+    
+    dispatch_async(serverQueue, ^{
+        
+        txtRecordDictionary = valueCopy;
+        
+        // Update the txtRecord of the netService if it has already been published
+        if (netService)
+        {
+            NSNetService *theNetService = netService;
+            NSData *txtRecordData = nil;
+            if (txtRecordDictionary)
+                txtRecordData = [NSNetService dataFromTXTRecordDictionary:txtRecordDictionary];
+            
+            dispatch_block_t bonjourBlock = ^{
+                [theNetService setTXTRecordData:txtRecordData];
+            };
+            
+            [[self class] performBonjourBlock:bonjourBlock];
+        }
+    });*/
+    
+}
+
 #if !TARGET_OS_IPHONE
 
 - (BOOL)runWithPort:(NSUInteger)port bonjourName:(NSString*)name {
