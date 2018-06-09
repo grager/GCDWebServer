@@ -52,6 +52,7 @@
 
 NSString* const GCDWebServerOption_Port = @"Port";
 NSString* const GCDWebServerOption_BonjourName = @"BonjourName";
+NSString* const GCDWebServerOption_BonjourOptions = @"BonjourOptions";
 NSString* const GCDWebServerOption_BonjourType = @"BonjourType";
 NSString* const GCDWebServerOption_RequestNATPortMapping = @"RequestNATPortMapping";
 NSString* const GCDWebServerOption_BindToLocalhost = @"BindToLocalhost";
@@ -586,6 +587,14 @@ static inline NSString* _EncodeBase64(NSString* string) {
     _registrationService = CFNetServiceCreate(kCFAllocatorDefault, CFSTR("local."), (__bridge CFStringRef)bonjourType, (__bridge CFStringRef)(bonjourName.length ? bonjourName : _serverName), (SInt32)_port);
     if (_registrationService) {
       CFNetServiceClientContext context = {0, (__bridge void*)self, NULL, NULL, NULL};
+      
+      NSDictionary* bonjourOptions = _GetOption(_options, GCDWebServerOption_BonjourOptions, nil);
+      
+      if(bonjourOptions)
+      {
+        NSData *bonjourOptionsData = [NSNetService dataFromTXTRecordDictionary:bonjourOptions];
+        CFNetServiceSetTXTData(_registrationService, (__bridge CFDataRef)bonjourOptionsData);
+      }
 
       CFNetServiceSetClient(_registrationService, _NetServiceRegisterCallBack, &context);
       CFNetServiceScheduleWithRunLoop(_registrationService, CFRunLoopGetMain(), kCFRunLoopCommonModes);
@@ -825,9 +834,17 @@ static inline NSString* _EncodeBase64(NSString* string) {
 }
 
 - (BOOL)startWithPort:(NSUInteger)port bonjourName:(NSString*)name {
+    
+    return [self startWithPort:port bonjourName:name bonjourOptions:nil];
+}
+
+- (BOOL)startWithPort:(NSUInteger)port bonjourName:(NSString*)name bonjourOptions:(NSDictionary*)bonjourOptions {
   NSMutableDictionary* options = [NSMutableDictionary dictionary];
   [options setObject:[NSNumber numberWithInteger:port] forKey:GCDWebServerOption_Port];
   [options setValue:name forKey:GCDWebServerOption_BonjourName];
+    if(bonjourOptions)
+        [options setValue:bonjourOptions forKey:GCDWebServerOption_BonjourOptions];
+
   return [self startWithOptions:options error:NULL];
 }
 
@@ -844,29 +861,7 @@ static inline NSString* _EncodeBase64(NSString* string) {
 
 - (void)setTXTRecordDictionary:(NSDictionary *)value
 {
-    
-/*    NSDictionary *valueCopy = [value copy];
-    
-    dispatch_async(serverQueue, ^{
-        
-        txtRecordDictionary = valueCopy;
-        
-        // Update the txtRecord of the netService if it has already been published
-        if (netService)
-        {
-            NSNetService *theNetService = netService;
-            NSData *txtRecordData = nil;
-            if (txtRecordDictionary)
-                txtRecordData = [NSNetService dataFromTXTRecordDictionary:txtRecordDictionary];
-            
-            dispatch_block_t bonjourBlock = ^{
-                [theNetService setTXTRecordData:txtRecordData];
-            };
-            
-            [[self class] performBonjourBlock:bonjourBlock];
-        }
-    });*/
-    
+  [(NSNetService*)CFBridgingRelease(_registrationService) setTXTRecordData:[NSNetService dataFromTXTRecordDictionary:value]];
 }
 
 #if !TARGET_OS_IPHONE

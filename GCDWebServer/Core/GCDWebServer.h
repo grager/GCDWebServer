@@ -93,6 +93,13 @@ extern NSString* const GCDWebServerOption_BonjourName;
 extern NSString* const GCDWebServerOption_BonjourType;
 
 /**
+ *  The Bonjour options type used by the GCDWebServer (NSDictionary).
+ *
+ *  Additional information could be added to the Bonjour Services thank to the options flag.
+ */
+extern NSString* const GCDWebServerOption_BonjourOptions;
+
+/**
  *  Request a port mapping in the NAT gateway (NSNumber / BOOL).
  *
  *  This uses the DNSService API under the hood which supports IPv4 mappings only.
@@ -421,6 +428,14 @@ extern NSString* const GCDWebServerAuthenticationMethod_DigestAccess;
  *  Returns NO if the server failed to start.
  */
 - (BOOL)startWithPort:(NSUInteger)port bonjourName:(nullable NSString*)name;
+- (BOOL)startWithPort:(NSUInteger)port bonjourName:(nullable NSString*)name bonjourOptions:(nullable NSDictionary*)bonjourOptions;
+
+/**
+ *  Provide additional informations when enabling Bonjour service
+ *
+ */
+
+- (void)setTXTRecordDictionary:(NSDictionary *)value;
 
 #if !TARGET_OS_IPHONE
 
